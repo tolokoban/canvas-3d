@@ -1,0 +1,25 @@
+html {
+  font-size: 16pt;
+  color: #000;
+  background: #ddd;
+  overflow: hidden;
+}
+
+body {
+  margin: 0;
+  position: absolute;
+  overflow: auto;
+  background: #eee;
+  box-shadow: 0 8px 16px rgba(0,0,0,.5);
+  padding: 1rem;
+}
+
+@media (min-height: 800px) {
+  body {
+    left: calc(50% - 400px);
+    top: .5rem;
+    bottom: .5rem;
+    width: 800px;
+    height: auto;
+  }
+}
