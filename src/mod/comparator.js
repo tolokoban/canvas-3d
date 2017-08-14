@@ -74,26 +74,31 @@ var Comparator = function(opts) {
     var ctx2 = c2.getContext("2d");
     var time1;
     var time2;
-    var LOOPS = 100000;
+    var LOOPS = 20000;
     var loop;
 
-    loop = LOOPS;
-    time1 = window.performance.now();
-    while( loop --> 0 ) {
-      slot( ctx1 );
-    }
-    time1 = window.performance.now() - time1;
+    divResult.textContent = "---";
+    btnCompare.enabled = false;
 
-    loop = LOOPS;
-    time2 = window.performance.now();
-    while( loop --> 0 ) {
-      slot( ctx2 );
-    }
-    time2 = window.performance.now() - time2;
+    window.setTimeout(function() {
+      loop = LOOPS;
+      time1 = window.performance.now();
+      while( loop --> 0 ) {
+        slot( ctx1 );
+      }
+      time1 = window.performance.now() - time1;
 
-    var result = Math.floor( 0.5 + 100 * (time2 / time1) );
-    divResult.textContent = result + " %";
-    alert( result );
+      loop = LOOPS;
+      time2 = window.performance.now();
+      while( loop --> 0 ) {
+        slot( ctx2 );
+      }
+      time2 = window.performance.now() - time2;
+
+      var result = Math.floor( 0.5 + 100 * (time2 / time1) );
+      divResult.textContent = result + " %";
+      btnCompare.enabled = true;
+    }, 350);
   });
 
   opts = DB.extend({

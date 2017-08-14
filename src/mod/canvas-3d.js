@@ -8,7 +8,7 @@ function Canvas3D( canvas ) {
     alpha: false,
     depth: true,
     stencil: false,
-    antialias: false,
+    antialias: true,
     premultipliedAlpha: false,
     preserveDrawingBuffer: true,
     failIfPerformanceCaveat: false
@@ -85,7 +85,7 @@ function Canvas3D( canvas ) {
   ]);
 
   // Context for save() / restore().
-  
+  this._contextStack = [];
 }
 
 module.exports = Canvas3D;
@@ -129,6 +129,23 @@ Canvas3D.prototype.rotate = function( a ) {
   t[3] = s*m11 + c*m12;
   t[4] = s*m21 + c*m22;
   t[5] = s*m31 + c*m32;
+};
+
+Canvas3D.prototype.save = function() {
+  this._contextStack.push({
+    globalAlpha: this.globalAlpha,
+    fillStyle: this.fillStyle,
+    transform: new Float32Array( this._transform )
+  });
+};
+
+Canvas3D.prototype.restore = function() {
+  if( this._contextStack.length === 0 ) return;
+  var context = this._contextStack.pop();
+
+  this.globalAlpha = context.globalAlpha;
+  this.fillStyle = context.fillStyle;
+  this._transform = context.transform;
 };
 
 Canvas3D.prototype.fillRect = function( x, y, w, h ) {
@@ -207,6 +224,7 @@ function parseColor( style ) {
   if( typeof style !== "string" ) return;
 
   style = style.trim().toLowerCase();
+  this._fillStyleName = style;
   if( style.charAt(0) === "#" ) {
     if( style.length === 4 ) {
       parseColorHexa3.call( this, style );

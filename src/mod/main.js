@@ -61,7 +61,7 @@ module.exports.rotate = function( ctx ) {
 module.exports.rotateAndTranslate = function( ctx ) {
   // #(rotateAndTranslate)
   ctx.translate( ctx.canvas.width * 0.5, ctx.canvas.height * 0.5 );
-  ctx.rotate( Math.PI / 6 );
+  ctx.rotate( -Math.PI / 13 );
   ctx.translate( -100, -50 );
   ctx.fillRect( 0, 0, 200, 100 );
   // #(rotateAndTranslate)
@@ -69,14 +69,17 @@ module.exports.rotateAndTranslate = function( ctx ) {
 
 module.exports.saveRestore = function( ctx ) {
   // #(saveRestore)
-  ctx.globalAlpha = 0.05;
+  ctx.fillStyle = "#0f4";
   for( var a=0 ; a < 100 ; a++ ) {
-    //ctx.save();
+    ctx.save();
+    ctx.fillStyle = "#f80";
+    ctx.globalAlpha = a * 0.002 + 0.1;
     ctx.translate( ctx.canvas.width * 0.5, ctx.canvas.height * 0.5 );
     ctx.rotate( a * Math.PI / 50 );
     ctx.translate( -100, -5 );
     ctx.fillRect( 0, 0, 200, 10 );
-    //ctx.restore();
+    ctx.restore();
   }
+  ctx.fillRect( 0, 0, 50, 50 );
   // #(saveRestore)
 };
