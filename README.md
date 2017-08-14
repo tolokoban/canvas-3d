@@ -12,7 +12,7 @@ var ctx = new Canvas3D( canvas );
 
 Si votre jeu utilise seulement les propriétés et méthodes suivantes, il fonctionnera sans rien changer d'autre (comparez les rendus sur la [page de tests](https://tolokoban.github.io/canvas-3d/index.html)) :
 
-* [drawImage(img, sx, sy)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawImage)
+* [drawImage(img, dx, dy)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawImage)
 * [globalAlpha](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalAlpha)
 * [fillStyle](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/fillStyle)
 * [fillRect(x, y, w, h)](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/fillRect)
