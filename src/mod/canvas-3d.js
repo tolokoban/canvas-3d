@@ -18,6 +18,7 @@ function Canvas3D( canvas ) {
   gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
 
   readonly( this, "gl", gl );
+  readonly( this, "canvas", canvas );
 
   prop( this, 'depthTest', function() {
     return this._depthTest;
@@ -82,6 +83,9 @@ function Canvas3D( canvas ) {
     0, 1, 0,
     0, 0, 1
   ]);
+
+  // Context for save() / restore().
+  
 }
 
 module.exports = Canvas3D;
@@ -102,6 +106,29 @@ Canvas3D.prototype.translate = function( tx, ty ) {
   t[6] = tx * m11 + ty * m12 + m13;
   t[7] = tx * m21 + ty * m22 + m23;
   t[8] = tx * m31 + ty * m32 + m33;
+};
+
+Canvas3D.prototype.rotate = function( a ) {  
+  var t = this._transform;
+  var m11 = t[0];
+  var m21 = t[1];
+  var m31 = t[2];
+  var m12 = t[3];
+  var m22 = t[4];
+  var m32 = t[5];
+  var m13 = t[6];
+  var m23 = t[7];
+  var m33 = t[8];
+
+  var c = Math.cos( -a );
+  var s = Math.sin( -a );
+
+  t[0] = c*m11 - s*m12;
+  t[1] = c*m21 - s*m22;
+  t[2] = c*m31 - s*m32;
+  t[3] = s*m11 + c*m12;
+  t[4] = s*m21 + c*m22;
+  t[5] = s*m31 + c*m32;
 };
 
 Canvas3D.prototype.fillRect = function( x, y, w, h ) {

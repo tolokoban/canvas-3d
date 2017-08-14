@@ -50,3 +50,33 @@ module.exports.translate = function( ctx ) {
   ctx.fillRect( 0, 0, 200, 100 );
   // #(translate)
 };
+
+module.exports.rotate = function( ctx ) {
+  // #(rotate)
+  ctx.rotate( Math.PI / 6 );
+  ctx.fillRect( 50, -25, 200, 100 );
+  // #(rotate)
+};
+
+module.exports.rotateAndTranslate = function( ctx ) {
+  // #(rotateAndTranslate)
+  ctx.translate( ctx.canvas.width * 0.5, ctx.canvas.height * 0.5 );
+  ctx.rotate( Math.PI / 6 );
+  ctx.translate( -100, -50 );
+  ctx.fillRect( 0, 0, 200, 100 );
+  // #(rotateAndTranslate)
+};
+
+module.exports.saveRestore = function( ctx ) {
+  // #(saveRestore)
+  ctx.globalAlpha = 0.05;
+  for( var a=0 ; a < 100 ; a++ ) {
+    //ctx.save();
+    ctx.translate( ctx.canvas.width * 0.5, ctx.canvas.height * 0.5 );
+    ctx.rotate( a * Math.PI / 50 );
+    ctx.translate( -100, -5 );
+    ctx.fillRect( 0, 0, 200, 10 );
+    //ctx.restore();
+  }
+  // #(saveRestore)
+};
