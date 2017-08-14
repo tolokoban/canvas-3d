@@ -13,7 +13,7 @@ function Canvas3D( canvas ) {
     preserveDrawingBuffer: true,
     failIfPerformanceCaveat: false
   });
-  
+
   gl.clearColor(1.0, 1.0, 1.0, 1.0);
   gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
 
@@ -54,19 +54,12 @@ function Canvas3D( canvas ) {
     return this._fillStyleName || "#000";
   }, parseColor );
 
+  //--------------------
   // Program for quads.
   this._prgQuad = new Program( gl, {
     vert: GLOBAL.quadV,
     frag: GLOBAL.quadF
   });
-
-  // Initial fillStyle is black.
-  this._fillStyle = new Float32Array( [0, 0, 0] );
-  // Initial globalAlpha is full opacity.
-  this.globalAlpha = 1;
-
-  // Default Z position.
-  this.z = 0;
 
   // Attributes for a quad.
   this._vertQuad = new Float32Array([
@@ -76,6 +69,30 @@ function Canvas3D( canvas ) {
     0, 0, 0
   ]);
   this._buffQuad = gl.createBuffer();
+
+  //--------------------
+  // Program for images.
+  this._prgImage = new Program( gl, {
+    vert: GLOBAL.imageV,
+    frag: GLOBAL.imageF
+  });
+
+  // Attributes for a image.
+  this._vertImage = new Float32Array([
+    0, 0, 0, 0, 0,
+    0, 0, 0, 1, 0,
+    0, 0, 0, 1, 1,
+    0, 0, 0, 0, 1
+  ]);
+  this._buffImage = gl.createBuffer();
+
+  // Initial fillStyle is black.
+  this._fillStyle = new Float32Array( [0, 0, 0] );
+  // Initial globalAlpha is full opacity.
+  this.globalAlpha = 1;
+
+  // Default Z position.
+  this.z = 0;
 
   // Transformation matrix.
   this._transform = new Float32Array([
@@ -90,6 +107,22 @@ function Canvas3D( canvas ) {
 
 module.exports = Canvas3D;
 
+Canvas3D.prototype.scale = function( sx, sy ) {
+  var t = this._transform;
+  var m11 = t[0];
+  var m21 = t[1];
+  var m31 = t[2];
+  var m12 = t[3];
+  var m22 = t[4];
+  var m32 = t[5];
+
+  t[0] = sx * m11;
+  t[1] = sx * m21;
+  t[2] = sx * m31;
+  t[3] = sy * m12;
+  t[4] = sy * m22;
+  t[5] = sy * m32;
+};
 
 Canvas3D.prototype.translate = function( tx, ty ) {
   var t = this._transform;
@@ -108,7 +141,7 @@ Canvas3D.prototype.translate = function( tx, ty ) {
   t[8] = tx * m31 + ty * m32 + m33;
 };
 
-Canvas3D.prototype.rotate = function( a ) {  
+Canvas3D.prototype.rotate = function( a ) {
   var t = this._transform;
   var m11 = t[0];
   var m21 = t[1];
@@ -134,7 +167,7 @@ Canvas3D.prototype.rotate = function( a ) {
 Canvas3D.prototype.save = function() {
   this._contextStack.push({
     globalAlpha: this.globalAlpha,
-    fillStyle: this.fillStyle,
+    fillStyle: new Float32Array( this._fillStyle ),
     transform: new Float32Array( this._transform )
   });
 };
@@ -144,30 +177,62 @@ Canvas3D.prototype.restore = function() {
   var context = this._contextStack.pop();
 
   this.globalAlpha = context.globalAlpha;
-  this.fillStyle = context.fillStyle;
+  this._fillStyle = context.fillStyle;
   this._transform = context.transform;
 };
 
 Canvas3D.prototype.fillRect = function( x, y, w, h ) {
-  this.fillQuad2D(
+  this.paintQuad2D(
     x, y,
     x + w, y,
     x + w, y + h,
     x, y + h
   );
 };
-  
-Canvas3D.prototype.fillQuad2D = function( x1, y1, x2, y2, x3, y3, x4, y4 ) {
-  var z = this.z;
-  this.fillQuad3D( x1, y1, z, x2, y2, z, x3, y3, z, x4, y4, z );
+
+Canvas3D.prototype.createTexture = function( img ) {
+  if( !img.$texture ) {
+    var gl = this.gl;
+    var texture = gl.createTexture();
+
+    // Définir les paramètres de répétition.
+    gl.bindTexture( gl.TEXTURE_2D, texture );
+    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE );
+    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE );
+    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR );
+    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
+
+    // Charger les données de l'image dans la carte graphique.
+    gl.activeTexture( gl.TEXTURE0 );
+    gl.bindTexture( gl.TEXTURE_2D, texture );
+    gl.texImage2D(
+      gl.TEXTURE_2D, 0, gl.RGBA,
+      gl.RGBA, gl.UNSIGNED_BYTE,
+      img );
+
+    img.$texture = texture;
+  }
+  return img.$texture;
 };
 
-Canvas3D.prototype.fillQuad3D = function( x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4 ) {
-  var gl = this.gl;  
+Canvas3D.prototype.deleteTexture = function( img ) {
+  if( img.$texture ) {
+    this.gl.deleteTexture( img.$texture );
+    delete img.$texture;
+  }
+};
+
+Canvas3D.prototype.paintQuad2D = function( x1, y1, x2, y2, x3, y3, x4, y4 ) {
+  var z = this.z;
+  this.paintQuad3D( x1, y1, z, x2, y2, z, x3, y3, z, x4, y4, z );
+};
+
+Canvas3D.prototype.paintQuad3D = function( x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4 ) {
+  var gl = this.gl;
   var prg = this._prgQuad;
   var vert = this._vertQuad;
   var buff = this._buffQuad;
-  
+
   vert[0] = x1;
   vert[1] = y1;
   vert[2] = z1;
@@ -180,7 +245,7 @@ Canvas3D.prototype.fillQuad3D = function( x1, y1, z1, x2, y2, z2, x3, y3, z3, x4
   vert[9] = x4;
   vert[10] = y4;
   vert[11] = z4;
-  
+
   prg.use();
   prg.$uniWidth = gl.canvas.width;
   prg.$uniHeight = gl.canvas.height;
@@ -189,6 +254,61 @@ Canvas3D.prototype.fillQuad3D = function( x1, y1, z1, x2, y2, z2, x3, y3, z3, x4
   prg.$uniTransform = this._transform;
 
   prg.bindAttribs( buff, "attPosition" );
+  gl.bindBuffer( gl.ARRAY_BUFFER, buff );
+  gl.bufferData( gl.ARRAY_BUFFER, vert, gl.STATIC_DRAW );
+
+  gl.drawArrays( gl.TRIANGLE_FAN, 0, 4 );
+};
+
+Canvas3D.prototype.drawImage = function( img, x, y ) {
+  var w = img.width;
+  var h = img.height;
+
+  this.paintImage2D(
+    img,
+    x, y,
+    x + w, y,
+    x + w, y + h,
+    x, y + h
+  );
+};
+
+Canvas3D.prototype.paintImage2D = function( img, x1, y1, x2, y2, x3, y3, x4, y4 ) {
+  var z = this.z;
+  this.paintImage3D( img, x1, y1, z, x2, y2, z, x3, y3, z, x4, y4, z );
+};
+
+Canvas3D.prototype.paintImage3D = function( img, x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4 ) {
+  var gl = this.gl;
+  var prg = this._prgImage;
+  var vert = this._vertImage;
+  var buff = this._buffImage;
+
+  vert[0] = x1;
+  vert[1] = y1;
+  vert[2] = z1;
+  vert[5] = x2;
+  vert[6] = y2;
+  vert[7] = z2;
+  vert[10] = x3;
+  vert[11] = y3;
+  vert[12] = z3;
+  vert[15] = x4;
+  vert[16] = y4;
+  vert[17] = z4;
+
+  prg.use();
+  prg.$uniWidth = gl.canvas.width;
+  prg.$uniHeight = gl.canvas.height;
+  prg.$uniGlobalAlpha = this.globalAlpha;
+  prg.$uniTransform = this._transform;
+
+  // Textures.
+  gl.activeTexture( gl.TEXTURE0 );
+  gl.bindTexture( gl.TEXTURE_2D, this.createTexture( img ) );
+  prg.$tex = 0;
+
+  prg.bindAttribs( buff, "attPosition", "attUV" );
   gl.bindBuffer( gl.ARRAY_BUFFER, buff );
   gl.bufferData( gl.ARRAY_BUFFER, vert, gl.STATIC_DRAW );
 
@@ -232,7 +352,76 @@ function parseColor( style ) {
     else if( style.length === 7 ) {
       parseColorHexa6.call( this, style );
     }
+  } else if( style.substr( 0, 3 ) === "rgb" ) {
+    parseColorRGB.call( this, style );
+  } else {
+    var div = document.createElement( "div" );
+    div.style.color = style;
+    document.body.appendChild( div );
+    var result = window.getComputedStyle( div ,null).getPropertyValue('color');
+    parseColorRGB.call( this, result );
+    document.body.removeChild( div );
   }
+}
+
+function parseColorRGB( style ) {
+  var d0 = "0".charCodeAt( 0 );
+  var d9 = d0 + 9;
+  var i = 3;
+  var s = style.length - 1;
+  // m == 0 :
+  var m = 0;
+  var c;
+  var R = 0, G = 0, B = 0;
+
+  // Rechercher le premier chiffre.
+  while( i < s ) {
+    c = style.charCodeAt( i );
+    if( c >= d0 && c <= d9 ) break;
+    i++;
+  }
+
+  // Lire la valeur du rouge.
+  while( i < s ) {
+    c = style.charCodeAt( i );
+    if( c < d0 || c > d9 ) break;
+    R = 10 * R + c - d0;
+    i++;
+  }
+
+  // Rechercher le prochain chiffre.
+  while( i < s ) {
+    c = style.charCodeAt( i );
+    if( c >= d0 && c <= d9 ) break;
+    i++;
+  }
+
+  // Lire la valeur du rouge.
+  while( i < s ) {
+    c = style.charCodeAt( i );
+    if( c < d0 || c > d9 ) break;
+    G = 10 * G + c - d0;
+    i++;
+  }
+
+  // Rechercher le prochain chiffre.
+  while( i < s ) {
+    c = style.charCodeAt( i );
+    if( c >= d0 && c <= d9 ) break;
+    i++;
+  }
+
+  // Lire la valeur du rouge.
+  while( i < s ) {
+    c = style.charCodeAt( i );
+    if( c < d0 || c > d9 ) break;
+    B = 10 * B + c - d0;
+    i++;
+  }
+
+  this._fillStyle[0] = R / 255;
+  this._fillStyle[1] = G / 255;
+  this._fillStyle[2] = B / 255;
 }
 
 var HEXA3 = {
@@ -388,7 +577,6 @@ var Program = function() {
       item.typeName = that.getTypeName( item.type );
       item.length = getSize.call( that, gl, item );
       item.location = gl.getAttribLocation( shaderProgram, item.name );
-      console.info( "item=", item );
       attribs[ item.name ] = item;
     }
 
@@ -397,7 +585,6 @@ var Program = function() {
   }
 
   function createAttributeSetter( gl, item, shaderProgram ) {
-    console.info( "item=", item );
     var name = item.name;
     return function ( v ) {
       if ( typeof v !== 'boolean' ) {
@@ -405,7 +592,6 @@ var Program = function() {
           "] Value must be a boolean: true if you want to enable this attribute, and false to disable it.";
       }
       if ( v ) {
-        console.log( "enableVertexAttribArray(", gl.getAttribLocation( shaderProgram, name ), ")" );
         gl.enableVertexAttribArray(
           gl.getAttribLocation( shaderProgram, name )
         );

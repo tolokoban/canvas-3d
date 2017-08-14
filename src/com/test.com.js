@@ -15,7 +15,6 @@ exports.compile = function( root, libs ) {
   var att = root.attribs || {};
   var testName = root.name.substr( 5 );
   root.name = 'div';
-  root.attribs = { "class": root.attribs.class };
   var children = [
     {
       type: TAG,
@@ -31,10 +30,12 @@ exports.compile = function( root, libs ) {
       name: 'x-widget',
       attribs: {
         name: "comparator",
-        $slot: testName
+        $slot: testName,
+        $images: root.attribs.images || []
       }
     }
   ];
+  root.attribs = { "class": root.attribs.class };
   root.children = children;
   libs.compile( root );
   

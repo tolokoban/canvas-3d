@@ -17,7 +17,7 @@ module.exports.fillRectWithFillStyle = function( ctx ) {
   ctx.fillRect( 10, 10, 260, 120 );
   ctx.fillStyle = "#28af47";
   ctx.fillRect( 20, 20, 260, 120 );
-  ctx.fillStyle = "#00f";
+  ctx.fillStyle = "hsl(17,70%,50%)";
   ctx.fillRect( 30, 30, 260, 120 );
   ctx.fillStyle = "#7733fd";
   ctx.fillRect( 40, 40, 260, 120 );
@@ -70,16 +70,34 @@ module.exports.rotateAndTranslate = function( ctx ) {
 module.exports.saveRestore = function( ctx ) {
   // #(saveRestore)
   ctx.fillStyle = "#0f4";
-  for( var a=0 ; a < 100 ; a++ ) {
+  for( var a=0 ; a < 25 ; a++ ) {
     ctx.save();
-    ctx.fillStyle = "#f80";
-    ctx.globalAlpha = a * 0.002 + 0.1;
+    ctx.fillStyle = "hsl(" + 14.4 * a + " 100% 50%)";
     ctx.translate( ctx.canvas.width * 0.5, ctx.canvas.height * 0.5 );
-    ctx.rotate( a * Math.PI / 50 );
+    ctx.rotate( a * Math.PI * 0.04 );
     ctx.translate( -100, -5 );
     ctx.fillRect( 0, 0, 200, 10 );
     ctx.restore();
   }
   ctx.fillRect( 0, 0, 50, 50 );
   // #(saveRestore)
+};
+
+module.exports.drawImage = function( ctx, images ) {
+  // #(drawImage)
+  var W = ctx.canvas.width;
+  var H = ctx.canvas.height;
+  var sprite1 = images.sprite1;
+
+  ctx.drawImage( images.sprite1, 0, 0 );
+  ctx.drawImage( images.sprite2, W - 160, 0 );
+  ctx.save();
+  ctx.globalAlpha = 0.7;
+  ctx.translate( 0.5 * W, 0.5 * H );
+  ctx.rotate( Math.PI / 3 );
+  ctx.scale( 0.5, 0.5 );
+  ctx.translate( -0.5 * sprite1.width, -0.5 * sprite1.height );
+  ctx.drawImage( images.sprite1, 0, 0 );
+  ctx.restore();
+  // #(drawImage)
 };
