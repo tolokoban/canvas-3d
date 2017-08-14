@@ -1,0 +1,6 @@
+{
+  "var": {
+    "quadV": "canvas3d.quad.vert",
+    "quadF": "canvas3d.quad.frag"
+  }
+}

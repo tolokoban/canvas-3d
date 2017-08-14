@@ -6,7 +6,7 @@
         "type": "git",
         "url": "https://github.com/tolokoban/canvas-3d.git"
     },
-    "homepage": "https://tolokoban.github.io/canvas-3d",
+    "homepage": "https://github.com/tolokoban/canvas-3d",
     "license": "GPL-3.0",
     "scripts": {
         "test": "node node_modules/karma/bin/karma start karma.conf.js",

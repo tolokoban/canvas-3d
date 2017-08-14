@@ -1,0 +1,10 @@
+div.comparator canvas {
+  margin: .5rem;
+  background: #fff;
+}
+
+div.comparator div.flex {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
