@@ -617,6 +617,8 @@ Path.prototype.closePath = function() {
 Path.prototype.fill = function() {
   console.info("[mod/canvas-3d] this._polylines=", this._polylines);
   console.info("[mod/canvas-3d] this._points=", this._points);
+
+  
 };
 
 ///////////////////

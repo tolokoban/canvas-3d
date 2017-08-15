@@ -2,6 +2,7 @@
 
 var $ = require("dom");
 var DB = require("tfw.data-binding");
+var Modal = require("wdg.modal");
 var Button = require("wdg.button");
 var Canvas3D = require("canvas-3d");
 
@@ -70,11 +71,17 @@ var Comparator = function(opts) {
     }
 
     var c1 = document.createElement("canvas");
+    c1.setAttribute("class", "thm-ele8");
     c1.setAttribute("width", WIDTH);
     c1.setAttribute("height", HEIGHT);
     var c2 = document.createElement("canvas");
+    c2.setAttribute("class", "thm-ele8");
     c2.setAttribute("width", WIDTH);
     c2.setAttribute("height", HEIGHT);
+
+    var modal = new Modal({ content: [c1, c2], header: "Please wait..." });
+    modal.attach();
+
     var ctx1 = c1.getContext("2d");
     var ctx2 = c2.getContext("2d");
     var time1;
@@ -85,25 +92,28 @@ var Comparator = function(opts) {
     divResult.textContent = "---";
     btnCompare.enabled = false;
 
-    loadImages( that.images ).then(function( images ) {
-      loop = LOOPS;
-      time2 = window.performance.now();
-      while( loop --> 0 ) {
-        slot( ctx2, images );
-      }
-      time2 = window.performance.now() - time2;
+    window.setTimeout(function() {
+      loadImages( that.images ).then(function( images ) {
+        loop = LOOPS;
+        time2 = window.performance.now();
+        while( loop --> 0 ) {
+          slot( ctx2, images );
+        }
+        time2 = window.performance.now() - time2;
 
-      loop = LOOPS;
-      time1 = window.performance.now();
-      while( loop --> 0 ) {
-        slot( ctx1, images );
-      }
-      time1 = window.performance.now() - time1;
+        loop = LOOPS;
+        time1 = window.performance.now();
+        while( loop --> 0 ) {
+          slot( ctx1, images );
+        }
+        time1 = window.performance.now() - time1;
 
-      var result = Math.floor( 0.5 + 100 * (time2 / time1) );
-      divResult.textContent = result + " %";
-      btnCompare.enabled = true;
-    });
+        var result = Math.floor( 0.5 + 100 * (time2 / time1) );
+        divResult.textContent = result + " %";
+        btnCompare.enabled = true;
+        modal.detach();
+      });
+    }, 400);
   });
 
   opts = DB.extend({

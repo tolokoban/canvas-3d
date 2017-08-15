@@ -101,3 +101,20 @@ module.exports.drawImage = function( ctx, images ) {
   ctx.restore();
   // #(drawImage)
 };
+
+module.exports.fill = function( ctx ) {
+  // #(fill)
+  ctx.fillStyle = "lime";
+  ctx.beginPath();
+  ctx.moveTo(50, 100);
+  ctx.lineTo(150, 70);
+  ctx.lineTo(100, 130);
+  ctx.lineTo(30, 50);
+  ctx.moveTo(200, 10);
+  ctx.lineTo(300, 70);
+  ctx.lineTo(300, 100);
+  ctx.lineTo(250, 80);
+  ctx.lineTo(200, 100);
+  ctx.fill();
+  // #(fill)
+};
