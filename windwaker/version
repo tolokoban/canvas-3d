@@ -1,0 +1,17 @@
+ --  0.0.1  --
+
+- separation en moteur/data (réussie ???)
+
+  635 m^2
+
+ -- TO DO --
+
+- ile de l'aurore
+
+ -- Lexique --
+
+C : compatible avec le pinceau
+A : compatibilité améliorable
+N : non compatible et source de bugs
+H : caché dans le code / non visible lors d'une partie normale
+B : bugué as fuck
