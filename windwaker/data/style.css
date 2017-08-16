@@ -65,3 +65,14 @@ canvas {
   position: absolute;
   transition: all 5s;
 }
+
+
+#FPS {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 3rem;
+  text-align: center;
+  background: #fff;
+  padding: 3px;
+}

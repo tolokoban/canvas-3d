@@ -1,12 +1,15 @@
 /** @module canvas-3d */require( 'canvas-3d', function(require, module, exports) { var _=function(){var D={"en":{},"fr":{}},X=require("$").intl;function _(){return X(D,arguments);}_.all=D;return _}();
  var GLOBAL = {
-  "quadV": "uniform mat3 uniTransform;\r\nuniform float uniWidth;\r\nuniform float uniHeight;\r\n\r\nattribute vec3 attPosition;\r\n\r\n\r\nvoid main() {\r\n  vec3 pos = uniTransform * vec3( attPosition.xy, 1.0 );\r\n  gl_Position = vec4( pos.xy, attPosition.z, 1.0 );\r\n\r\n  // Convert pixels to WebGL space coords.\r\n  gl_Position.x = 2.0 * gl_Position.x / uniWidth - 1.0;\r\n  gl_Position.y = 1.0 - 2.0 * gl_Position.y / uniHeight;\r\n}\r\n",
-  "quadF": "precision mediump float;\r\n\r\nuniform float uniGlobalAlpha;\r\nuniform vec3 uniFillStyle;\r\n\r\nvoid main() {\r\n  gl_FragColor = vec4(uniFillStyle, uniGlobalAlpha);\r\n}\r\n",
-  "imageV": "uniform mat3 uniTransform;\r\nuniform float uniWidth;\r\nuniform float uniHeight;\r\n\r\nattribute vec3 attPosition;\r\nattribute vec2 attUV;\r\n\r\nvarying vec2 varUV;\r\n\r\nvoid main() {\r\n  varUV = attUV;\r\n\r\n  vec3 pos = uniTransform * vec3( attPosition.xy, 1.0 );\r\n  gl_Position = vec4( pos.xy, attPosition.z, 1.0 );\r\n\r\n  // Convert pixels to WebGL space coords.\r\n  gl_Position.x = 2.0 * gl_Position.x / uniWidth - 1.0;\r\n  gl_Position.y = 1.0 - 2.0 * gl_Position.y / uniHeight;\r\n}\r\n",
-  "imageF": "precision mediump float;\r\n\r\nuniform float uniGlobalAlpha;\r\n\r\nvarying vec2 varUV;\r\n\r\n// Textures.\r\nuniform sampler2D tex;\r\n\r\nvoid main() { \r\n  gl_FragColor = texture2D(tex, varUV);\r\n  gl_FragColor.a *= uniGlobalAlpha;\r\n  if( gl_FragColor.a < 0.01 ) discard;\r\n}\r\n"};
+  "quadV": "uniform mat3 uniTransform;\nuniform float uniWidth;\nuniform float uniHeight;\n\nattribute vec3 attPosition;\n\n\nvoid main() {\n  vec3 pos = uniTransform * vec3( attPosition.xy, 1.0 );\n  gl_Position = vec4( pos.xy, attPosition.z, 1.0 );\n\n  // Convert pixels to WebGL space coords.\n  gl_Position.x = 2.0 * gl_Position.x / uniWidth - 1.0;\n  gl_Position.y = 1.0 - 2.0 * gl_Position.y / uniHeight;\n}\n",
+  "quadF": "precision mediump float;\n\nuniform float uniGlobalAlpha;\nuniform vec3 uniFillStyle;\n\nvoid main() {\n  gl_FragColor = vec4(uniFillStyle, uniGlobalAlpha);\n}\n",
+  "imageV": "uniform mat3 uniTransform;\nuniform float uniWidth;\nuniform float uniHeight;\n\nattribute vec3 attPosition;\nattribute vec2 attUV;\n\nvarying vec2 varUV;\n\nvoid main() {\n  varUV = attUV;\n\n  vec3 pos = uniTransform * vec3( attPosition.xy, 1.0 );\n  gl_Position = vec4( pos.xy, attPosition.z, 1.0 );\n\n  // Convert pixels to WebGL space coords.\n  gl_Position.x = 2.0 * gl_Position.x / uniWidth - 1.0;\n  gl_Position.y = 1.0 - 2.0 * gl_Position.y / uniHeight;\n}\n",
+  "imageF": "precision mediump float;\n\nuniform float uniGlobalAlpha;\n\nvarying vec2 varUV;\n\n// Textures.\nuniform sampler2D tex;\n\nvoid main() { \n  gl_FragColor = texture2D(tex, varUV);\n  gl_FragColor.a *= uniGlobalAlpha;\n  if( gl_FragColor.a < 0.01 ) discard;\n}\n"};
   "use strict";
 
+console.log("CANVAS 3D");
+
 var BPE = ( new Float32Array() ).BYTES_PER_ELEMENT;
+var EMPTY = function() {};
 
 // An  error message  is  displayed  in the  console  when  a not  yet
 // implemented method  or property is  used. But to  prevent reporting
@@ -14,7 +17,7 @@ var BPE = ( new Float32Array() ).BYTES_PER_ELEMENT;
 // already reported.
 var NOT_IMPLEMENTED = {};
 
-function Canvas3D( canvas ) {
+var Canvas3D = function( canvas ) {
   var that = this;
 
   var gl = canvas.getContext("webgl", {
@@ -23,7 +26,7 @@ function Canvas3D( canvas ) {
     stencil: false,
     antialias: false,
     premultipliedAlpha: false,
-    preserveDrawingBuffer: false,
+    preserveDrawingBuffer: true,
     failIfPerformanceCaveat: false
   });
 
@@ -116,9 +119,11 @@ function Canvas3D( canvas ) {
 
   // Current Path.
   this._path = new Path( this );
-  
+
   // Context for save() / restore().
   this._contextStack = [];
+
+  //
 
   // Show error message for not yet implemented properties.
   [
@@ -152,7 +157,16 @@ function Canvas3D( canvas ) {
       console.error( Error("[Canvas3D] Property not yet implemented: " + propName) );
     });
   });
-}
+};
+
+Canvas3D.getContext2D = function( canvas ) {
+  var ctx = canvas.getContext("2d");
+  ctx.resize = EMPTY;
+  ctx.flush = EMPTY;
+  return ctx;
+};
+
+console.log("[...] Canvas3D.getContext2D=", Canvas3D.getContext2D);
 
 module.exports = Canvas3D;
 
@@ -198,6 +212,9 @@ module.exports = Canvas3D;
   };
 });
 
+Canvas3D.prototype.flush = function() {
+};
+
 Canvas3D.prototype.resize = function( resolution ) {
   var gl = this.gl;
   if ( typeof resolution !== 'number' ) {
@@ -208,13 +225,13 @@ Canvas3D.prototype.resize = function( resolution ) {
 
   // Check if the canvas is not the same size.
   if ( gl.canvas.width !== displayWidth ||
-    gl.canvas.height !== displayHeight ) {
+       gl.canvas.height !== displayHeight ) {
 
-    // Make the canvas the same size
-    gl.canvas.width = displayWidth;
-    gl.canvas.height = displayHeight;
-    gl.viewport( 0, 0, displayWidth, displayHeight );
-  }
+         // Make the canvas the same size
+         gl.canvas.width = displayWidth;
+         gl.canvas.height = displayHeight;
+         gl.viewport( 0, 0, displayWidth, displayHeight );
+       }
 };
 
 Canvas3D.prototype.beginPath = function() {
@@ -393,39 +410,25 @@ Canvas3D.prototype.paintQuad3D = function( x1, y1, z1, x2, y2, z2, x3, y3, z3, x
 Canvas3D.prototype.drawImage = function( img, x, y ) {
   var w = img.width;
   var h = img.height;
-
-  this.paintImage2D(
-    img,
-    x, y,
-    x + w, y,
-    x + w, y + h,
-    x, y + h
-  );
-};
-
-Canvas3D.prototype.paintImage2D = function( img, x1, y1, x2, y2, x3, y3, x4, y4 ) {
   var z = this.z;
-  this.paintImage3D( img, x1, y1, z, x2, y2, z, x3, y3, z, x4, y4, z );
-};
 
-Canvas3D.prototype.paintImage3D = function( img, x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4 ) {
   var gl = this.gl;
   var prg = this._prgImage;
   var vert = this._vertImage;
   var buff = this._buffImage;
 
-  vert[0] = x1;
-  vert[1] = y1;
-  vert[2] = z1;
-  vert[5] = x2;
-  vert[6] = y2;
-  vert[7] = z2;
-  vert[10] = x3;
-  vert[11] = y3;
-  vert[12] = z3;
-  vert[15] = x4;
-  vert[16] = y4;
-  vert[17] = z4;
+  vert[0] = x;
+  vert[1] = y;
+  vert[2] = z;
+  vert[5] = x + w;
+  vert[6] = y;
+  vert[7] = z;
+  vert[10] = x + w;
+  vert[11] = y + h;
+  vert[12] = z;
+  vert[15] = x;
+  vert[16] = y + h;
+  vert[17] = z;
 
   prg.use();
   prg.$uniWidth = gl.canvas.width;
@@ -641,10 +644,10 @@ Path.prototype.closePath = function() {
 
 Path.prototype.fill = function() {
   /*
-  console.info("[mod/canvas-3d] this._polylines=", this._polylines);
-  console.info("[mod/canvas-3d] this._points=", this._points);
-*/
-  
+   console.info("[mod/canvas-3d] this._polylines=", this._polylines);
+   console.info("[mod/canvas-3d] this._points=", this._points);
+   */
+
 };
 
 ///////////////////

@@ -91,8 +91,8 @@ function rnd(max){
 function resize(){
   W = window.innerWidth;
   H = window.innerHeight;
-  canvas.setAttribute("width",W);
-  canvas.setAttribute("height",H);
+  canvas.width = W;
+  canvas.height = H;
   ctx.resize();
 }
 
@@ -175,16 +175,17 @@ function unSave(){
 function precharge(){
   ctx.fillrect = "rgb(0,0,0)";
   ctx.fillRect(0,0,W,H);
+  // alert("Silence dans la salle ! Le jeu charge.");
   fondfond.src = "images/Title.png";
   fondfond.onload = function(){
     ctx.drawImage(fondfond,W/2-187,H/2-131);
-    alert("Silence dans la salle ! Le jeu charge.");
-
     savedMap = JSON.parse(JSON.stringify(iles));
     console.log(savedMap["depart"]);
     savedHouseMap = JSON.parse(JSON.stringify(interieurs));
 
-    cinematicos = 8;
+    //cinematicos = 8;
+    cinematicos = 0;
+
     charge();
   };
 }
@@ -325,13 +326,13 @@ function charge(){
 function start(){
   canvas = document.querySelector("#canvas");
 
-  console.info("[start] location.search=", location.search);
   if( location.search.length === 0 ) {
-    ctx = canvas.getContext("2d");
-    // Pour pouvoir utiliser la fonction resize de Canvas3D.
-    ctx.resize = function() {};
+    console.info("[start] Canvas3D=", Canvas3D);
+    console.info("[start] Canvas3D.getContext2D=", Canvas3D.getContext2D);
+    ctx = Canvas3D.getContext2D( canvas );
   } else {
     ctx = new Canvas3D( canvas );
+    window.setTimeout( resize, 500 );
   }
 
   backg = new background(ctx);
@@ -473,6 +474,21 @@ function animation(){
     if (out == 4) alert("Utilisez les flèches pour vous déplacer et la barre espace pour interagir avec la case en face de vous ou faire disparaître ce message. Allez parler au visage du developpeur pour plus d'infos.");
     ctx.globalAlpha = 1;
     var f = function(t) {
+      // Optimisations pour Canvas3D.
+      ctx.resize( 1 );
+
+      if( FPS.lastTime === 0 ) {
+        FPS.lastTime = t;
+      } else {
+        FPS.frames++;
+        if( FPS.frames === FPS.max ) {
+          if( !FPS.div ) FPS.div = document.getElementById("FPS");
+          FPS.div.textContent = Math.floor(0.5 + 1000 * FPS.max / (t - FPS.lastTime) );
+          FPS.frames = 0;
+          FPS.lastTime = t;
+        }
+      }
+
       try{
         if (onSea == 0) {action(t); draw();gamePadF();}
         else if (onSea == 1){sail(t);gamePadF();}
@@ -486,10 +502,19 @@ function animation(){
       else {
         animation();
       }
+
+      // Optimisations pour Canvas3D.
+      ctx.flush();
     };
     window.requestAnimationFrame(f);
   }
 }
+
+var FPS = {
+  lastTime: 0,
+  frames: 0,
+  max: 20
+};
 
 function draw() {
   ctx.fillStyle = colors[0];

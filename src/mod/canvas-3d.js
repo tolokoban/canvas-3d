@@ -1,6 +1,9 @@
 "use strict";
 
+console.log("CANVAS 3D");
+
 var BPE = ( new Float32Array() ).BYTES_PER_ELEMENT;
+var EMPTY = function() {};
 
 // An  error message  is  displayed  in the  console  when  a not  yet
 // implemented method  or property is  used. But to  prevent reporting
@@ -8,7 +11,7 @@ var BPE = ( new Float32Array() ).BYTES_PER_ELEMENT;
 // already reported.
 var NOT_IMPLEMENTED = {};
 
-function Canvas3D( canvas ) {
+var Canvas3D = function( canvas ) {
   var that = this;
 
   var gl = canvas.getContext("webgl", {
@@ -17,7 +20,7 @@ function Canvas3D( canvas ) {
     stencil: false,
     antialias: false,
     premultipliedAlpha: false,
-    preserveDrawingBuffer: false,
+    preserveDrawingBuffer: true,
     failIfPerformanceCaveat: false
   });
 
@@ -110,9 +113,11 @@ function Canvas3D( canvas ) {
 
   // Current Path.
   this._path = new Path( this );
-  
+
   // Context for save() / restore().
   this._contextStack = [];
+
+  //
 
   // Show error message for not yet implemented properties.
   [
@@ -146,7 +151,16 @@ function Canvas3D( canvas ) {
       console.error( Error("[Canvas3D] Property not yet implemented: " + propName) );
     });
   });
-}
+};
+
+Canvas3D.getContext2D = function( canvas ) {
+  var ctx = canvas.getContext("2d");
+  ctx.resize = EMPTY;
+  ctx.flush = EMPTY;
+  return ctx;
+};
+
+console.log("[...] Canvas3D.getContext2D=", Canvas3D.getContext2D);
 
 module.exports = Canvas3D;
 
@@ -192,6 +206,9 @@ module.exports = Canvas3D;
   };
 });
 
+Canvas3D.prototype.flush = function() {
+};
+
 Canvas3D.prototype.resize = function( resolution ) {
   var gl = this.gl;
   if ( typeof resolution !== 'number' ) {
@@ -202,13 +219,13 @@ Canvas3D.prototype.resize = function( resolution ) {
 
   // Check if the canvas is not the same size.
   if ( gl.canvas.width !== displayWidth ||
-    gl.canvas.height !== displayHeight ) {
+       gl.canvas.height !== displayHeight ) {
 
-    // Make the canvas the same size
-    gl.canvas.width = displayWidth;
-    gl.canvas.height = displayHeight;
-    gl.viewport( 0, 0, displayWidth, displayHeight );
-  }
+         // Make the canvas the same size
+         gl.canvas.width = displayWidth;
+         gl.canvas.height = displayHeight;
+         gl.viewport( 0, 0, displayWidth, displayHeight );
+       }
 };
 
 Canvas3D.prototype.beginPath = function() {
@@ -621,10 +638,10 @@ Path.prototype.closePath = function() {
 
 Path.prototype.fill = function() {
   /*
-  console.info("[mod/canvas-3d] this._polylines=", this._polylines);
-  console.info("[mod/canvas-3d] this._points=", this._points);
-*/
-  
+   console.info("[mod/canvas-3d] this._polylines=", this._polylines);
+   console.info("[mod/canvas-3d] this._points=", this._points);
+   */
+
 };
 
 ///////////////////
