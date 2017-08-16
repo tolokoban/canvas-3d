@@ -79,28 +79,31 @@ var Comparator = function(opts) {
     c2.setAttribute("width", WIDTH);
     c2.setAttribute("height", HEIGHT);
 
-    var modal = new Modal({ content: [c1, c2], header: "Please wait..." });
+    var btnClose = Button.Close();
+    var divResultModal = $.div(["---"]);
+    
+    var modal = new Modal({
+      header: "Test de vitesses comparées",
+      content: [c1, $.tag("br"), c2],
+      footer: [divResultModal, btnClose]
+    });
     modal.attach();
+    btnClose.on( modal.detach.bind( modal ) );
 
     var ctx1 = c1.getContext("2d");
-    var ctx2 = c2.getContext("2d");
+    var ctx2 = new Canvas3D( c2 );
     var time1;
     var time2;
-    var LOOPS = 10000;
+    var LOOPS = 1000;
     var loop;
 
     divResult.textContent = "---";
+    divResultModal.textContent = "---";
     btnCompare.enabled = false;
+    btnClose.enabled = false;
 
     window.setTimeout(function() {
       loadImages( that.images ).then(function( images ) {
-        loop = LOOPS;
-        time2 = window.performance.now();
-        while( loop --> 0 ) {
-          slot( ctx2, images );
-        }
-        time2 = window.performance.now() - time2;
-
         loop = LOOPS;
         time1 = window.performance.now();
         while( loop --> 0 ) {
@@ -108,10 +111,19 @@ var Comparator = function(opts) {
         }
         time1 = window.performance.now() - time1;
 
-        var result = Math.floor( 0.5 + 100 * (time2 / time1) );
+        loop = LOOPS;
+        time2 = window.performance.now();
+        while( loop --> 0 ) {
+          slot( ctx2, images );
+        }
+        time2 = window.performance.now() - time2;
+
+        var result = Math.floor( 0.5 + 100 * (time1 / time2) );
         divResult.textContent = result + " %";
+        divResultModal.textContent = Math.floor(0.5 + time1) + " / " + Math.floor(0.5 + time2 )
+          + " = " + result.toFixed(2) + " %";
         btnCompare.enabled = true;
-        modal.detach();
+        btnClose.enabled = true;
       });
     }, 400);
   });

@@ -15,9 +15,9 @@ function Canvas3D( canvas ) {
     alpha: false,
     depth: true,
     stencil: false,
-    antialias: true,
+    antialias: false,
     premultipliedAlpha: false,
-    preserveDrawingBuffer: true,
+    preserveDrawingBuffer: false,
     failIfPerformanceCaveat: false
   });
 
@@ -191,6 +191,25 @@ module.exports = Canvas3D;
     console.error( Error("[Canvas3D] Not implemented yet: " + methodName + "()") );
   };
 });
+
+Canvas3D.prototype.resize = function( resolution ) {
+  var gl = this.gl;
+  if ( typeof resolution !== 'number' ) {
+    resolution = window.devicePixelRatio;
+  }
+  var displayWidth = Math.floor( gl.canvas.clientWidth * resolution );
+  var displayHeight = Math.floor( gl.canvas.clientHeight * resolution );
+
+  // Check if the canvas is not the same size.
+  if ( gl.canvas.width !== displayWidth ||
+    gl.canvas.height !== displayHeight ) {
+
+    // Make the canvas the same size
+    gl.canvas.width = displayWidth;
+    gl.canvas.height = displayHeight;
+    gl.viewport( 0, 0, displayWidth, displayHeight );
+  }
+};
 
 Canvas3D.prototype.beginPath = function() {
   this._path = new Path( this );
@@ -368,39 +387,25 @@ Canvas3D.prototype.paintQuad3D = function( x1, y1, z1, x2, y2, z2, x3, y3, z3, x
 Canvas3D.prototype.drawImage = function( img, x, y ) {
   var w = img.width;
   var h = img.height;
-
-  this.paintImage2D(
-    img,
-    x, y,
-    x + w, y,
-    x + w, y + h,
-    x, y + h
-  );
-};
-
-Canvas3D.prototype.paintImage2D = function( img, x1, y1, x2, y2, x3, y3, x4, y4 ) {
   var z = this.z;
-  this.paintImage3D( img, x1, y1, z, x2, y2, z, x3, y3, z, x4, y4, z );
-};
 
-Canvas3D.prototype.paintImage3D = function( img, x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4 ) {
   var gl = this.gl;
   var prg = this._prgImage;
   var vert = this._vertImage;
   var buff = this._buffImage;
 
-  vert[0] = x1;
-  vert[1] = y1;
-  vert[2] = z1;
-  vert[5] = x2;
-  vert[6] = y2;
-  vert[7] = z2;
-  vert[10] = x3;
-  vert[11] = y3;
-  vert[12] = z3;
-  vert[15] = x4;
-  vert[16] = y4;
-  vert[17] = z4;
+  vert[0] = x;
+  vert[1] = y;
+  vert[2] = z;
+  vert[5] = x + w;
+  vert[6] = y;
+  vert[7] = z;
+  vert[10] = x + w;
+  vert[11] = y + h;
+  vert[12] = z;
+  vert[15] = x;
+  vert[16] = y + h;
+  vert[17] = z;
 
   prg.use();
   prg.$uniWidth = gl.canvas.width;
@@ -615,8 +620,11 @@ Path.prototype.closePath = function() {
 };
 
 Path.prototype.fill = function() {
+  /*
   console.info("[mod/canvas-3d] this._polylines=", this._polylines);
   console.info("[mod/canvas-3d] this._points=", this._points);
+*/
+  
 };
 
 ///////////////////
