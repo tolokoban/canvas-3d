@@ -3,9 +3,12 @@ uniform float uniWidth;
 uniform float uniHeight;
 
 attribute vec3 attPosition;
-
+attribute vec3 attColor;
+varying vec3 varColor;
 
 void main() {
+  varColor = attColor;
+  
   vec3 pos = uniTransform * vec3( attPosition.xy, 1.0 );
   gl_Position = vec4( pos.xy, attPosition.z, 1.0 );
 

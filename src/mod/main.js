@@ -7,7 +7,14 @@ var $ = require("dom");
 
 module.exports.fillRect = function( ctx ) {
   // #(fillRect)
-  ctx.fillRect( 10, 10, 200, 100 );
+  var x, y;
+  var w = ctx.canvas.width;
+  var h = ctx.canvas.height;
+  for( y = 0 ; y < h ; y += 25 ) {
+    for( x = 0 ; x < w ; x += 25 ) {
+      ctx.fillRect( x, y, 20, 20 );
+    }
+  }
   // #(fillRect)
 };
 

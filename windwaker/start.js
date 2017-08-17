@@ -173,8 +173,8 @@ function unSave(){
 }
 
 function precharge(){
-  ctx.fillrect = "rgb(0,0,0)";
-  ctx.fillRect(0,0,W,H);
+  ctx.fillStyle = "#000";
+  ctx.clearScreen();
   // alert("Silence dans la salle ! Le jeu charge.");
   fondfond.src = "images/Title.png";
   fondfond.onload = function(){

@@ -1,0 +1,6 @@
+{
+  "var": {
+    "vert": "canvas-3d.mesh.vert",
+    "frag": "canvas-3d.mesh.frag"
+  }
+}

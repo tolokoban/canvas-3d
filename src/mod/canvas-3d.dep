@@ -1,7 +1,5 @@
 {
   "var": {
-    "quadV": "canvas3d.quad.vert",
-    "quadF": "canvas3d.quad.frag",
     "imageV": "canvas3d.image.vert",
     "imageF": "canvas3d.image.frag"
   }

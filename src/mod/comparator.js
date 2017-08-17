@@ -46,15 +46,17 @@ var Comparator = function(opts) {
     }
     if( typeof slot === "function" ) {
       loadImages( that.images ).then(function( images ) {
-        var ctx1 = canvas1.getContext("2d");
+        var ctx1 = Canvas3D.getContext2D( canvas1 );
         try {
           slot( ctx1, images );
+          ctx1.flush();
         } catch( ex ) {
           console.error( Error( ex ) );
         }
         var ctx2 = new Canvas3D( canvas2 );
         try {
           slot( ctx2, images );
+          ctx2.flush();
         } catch( ex ) {
           console.error( Error( ex ) );
         }
@@ -90,7 +92,7 @@ var Comparator = function(opts) {
     modal.attach();
     btnClose.on( modal.detach.bind( modal ) );
 
-    var ctx1 = c1.getContext("2d");
+    var ctx1 = Canvas3D.getContext2D( c1 );
     var ctx2 = new Canvas3D( c2 );
     var time1;
     var time2;
@@ -109,6 +111,7 @@ var Comparator = function(opts) {
         while( loop --> 0 ) {
           slot( ctx1, images );
         }
+        ctx1.flush();
         time1 = window.performance.now() - time1;
 
         loop = LOOPS;
@@ -116,6 +119,7 @@ var Comparator = function(opts) {
         while( loop --> 0 ) {
           slot( ctx2, images );
         }
+        ctx2.flush();
         time2 = window.performance.now() - time2;
 
         var result = Math.floor( 0.5 + 100 * (time1 / time2) );
