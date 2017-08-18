@@ -152,7 +152,6 @@ Canvas3D.getContext2D = function( canvas ) {
     // Check if the canvas is not the same size.
     if ( canvas.width !== displayWidth ||
          canvas.height !== displayHeight ) {
-
       // Make the canvas the same size
       canvas.width = displayWidth;
       canvas.height = displayHeight;
@@ -163,6 +162,15 @@ Canvas3D.getContext2D = function( canvas ) {
 
   ctx.clearScreen = function() {
     ctx.fillRect( 0, 0, canvas.width, canvas.height );
+  };
+
+  ctx.paintQuad = function( x1, y1, x2, y2, x3, y3, x4, y4 ) {
+    ctx.beginPath();
+    ctx.moveTo( x1, y1 );
+    ctx.lineTo( x2, y2 );
+    ctx.lineTo( x3, y3 );
+    ctx.lineTo( x4, y4 );
+    ctx.fill();
   };
   
   return ctx;
@@ -354,6 +362,17 @@ Canvas3D.prototype.fillRect = function( x, y, w, h ) {
   this._mesh.rect( x, y, z, w, h, c[0], c[1], c[2] );
 };
 
+Canvas3D.prototype.paintQuad = function( x1, y1, x2, y2, x3, y3, x4, y4 ) {
+  var z = this.z;
+  var c = this._fillStyle;
+  this._mesh.quad(
+    x1, y1, z,
+    x2, y2, z,
+    x3, y3, z,
+    x4, y4, z,
+    c[0], c[1], c[2]  );
+};
+
 Canvas3D.prototype.createTexture = function( img ) {
   if( !img.$texture ) {
     var gl = this.gl;
@@ -389,7 +408,7 @@ Canvas3D.prototype.deleteTexture = function( img ) {
 Canvas3D.prototype.drawImage = function( img, x, y ) {
   var w = img.width;
   var h = img.height;
-  var z = this.z;
+  var z = this.z - 0.1;
 
   var gl = this.gl;
   var prg = this._prgImage;

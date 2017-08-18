@@ -6,7 +6,7 @@
 
 var Program = require("canvas-3d.program");
 
-var NB_TRI = 200;
+var NB_TRI = 500;
 var ELEM_MAX_LEN = NB_TRI * 3;
 var NB_ATT = 6;  // X, Y, Z, R, G, B.
 
@@ -113,6 +113,70 @@ Mesh.prototype.rect = function( x, y, z, w, h, r, g, b ) {
   this._vertData[ptrVert + 21] = r;
   this._vertData[ptrVert + 22] = g;
   this._vertData[ptrVert + 23] = b;
+
+  this._elemData[ptrElem + 0] = idxVert + 0;
+  this._elemData[ptrElem + 1] = idxVert + 1;
+  this._elemData[ptrElem + 2] = idxVert + 2;
+  this._elemData[ptrElem + 3] = idxVert + 0;
+  this._elemData[ptrElem + 4] = idxVert + 2;
+  this._elemData[ptrElem + 5] = idxVert + 3;
+  
+  this._idxVert += 4;
+  this._ptrVert += 24;
+  this._ptrElem += 6;
+};
+
+Mesh.prototype.quad = function( x1, y1, z1,
+                                x2, y2, z2,
+                                x3, y3, z3,
+                                x4, y4, z4,
+                                r1, g1, b1,
+                                r2, g2, b2,
+                                r3, g3, b3,
+                                r4, g4, b4 ) {
+  if( this._ptrElem >= ELEM_MAX_LEN - 6 ) {
+    // If there is no space for two new triangles, just flush the buffer.
+    this.flush();
+  }
+
+  if( typeof r2 === 'undefined' ) {
+    r4 = r3 = r2 = r1;
+    g4 = g3 = g2 = g1;
+    b4 = b3 = b2 = b1;
+  }
+  
+  var idxVert = this._idxVert;
+  var ptrVert = this._ptrVert;
+  var ptrElem = this._ptrElem;
+
+  // Vertex 0.
+  this._vertData[ptrVert + 0] = x1;
+  this._vertData[ptrVert + 1] = y1;
+  this._vertData[ptrVert + 2] = z1;
+  this._vertData[ptrVert + 3] = r1;
+  this._vertData[ptrVert + 4] = g1;
+  this._vertData[ptrVert + 5] = b1;
+  // Vertex 1.
+  this._vertData[ptrVert + 6] = x2;
+  this._vertData[ptrVert + 7] = y2;
+  this._vertData[ptrVert + 8] = z2;
+  this._vertData[ptrVert + 9] = r2;
+  this._vertData[ptrVert + 10] = g2;
+  this._vertData[ptrVert + 11] = b2;
+  // Vertex 2.
+  this._vertData[ptrVert + 12] = x3;
+  this._vertData[ptrVert + 13] = y3;
+  this._vertData[ptrVert + 14] = z3;
+  this._vertData[ptrVert + 15] = r3;
+  this._vertData[ptrVert + 16] = g3;
+  this._vertData[ptrVert + 17] = b3;
+  // Vertex 3.
+  this._vertData[ptrVert + 18] = x4;
+  this._vertData[ptrVert + 19] = y4;
+  this._vertData[ptrVert + 20] = z4;
+  this._vertData[ptrVert + 21] = r4;
+  this._vertData[ptrVert + 22] = g4;
+  this._vertData[ptrVert + 23] = b4;
 
   this._elemData[ptrElem + 0] = idxVert + 0;
   this._elemData[ptrElem + 1] = idxVert + 1;

@@ -88,14 +88,6 @@ function rnd(max){
   return Math.floor(Math.floor(Math.random()*max));
 }
 
-function resize(){
-  W = window.innerWidth;
-  H = window.innerHeight;
-  canvas.width = W;
-  canvas.height = H;
-  ctx.resize();
-}
-
 function save(){
   figer = 1;
   alert("Sauvegarde en cours, cela peut prendre du temps mais pas toujours. Tout dépends du ressenti que vous en avez et de la réelle longueur du chargement. Parce que mine de rien, il y en a des choses à sauvegarder dans ce jeu. Surtout si vous avez eu l'aimable sauvagerie de couper toutes les herbes ou de défigurer mes jolies petites îles avec le pinceau.");
@@ -332,7 +324,7 @@ function start(){
     ctx = Canvas3D.getContext2D( canvas );
   } else {
     ctx = new Canvas3D( canvas );
-    window.setTimeout( resize, 500 );
+    ctx.depthTest = true;
   }
 
   backg = new background(ctx);
@@ -348,7 +340,6 @@ function start(){
 
   init();
   setColors(out,5);
-  resize();
   //    canvas.addEventListener("click",function(evt) {
   //                           evt.stopPropagation();
   //                        evt.preventDefault();
@@ -387,12 +378,6 @@ function start(){
       if (onSea == 0){
         clickEdit(x,y,event.button);
       }
-    }
-  );
-  document.addEventListener(
-    "resize",
-    function (event){
-      resize();
     }
   );
   document.addEventListener(
@@ -476,6 +461,8 @@ function animation(){
     var f = function(t) {
       // Optimisations pour Canvas3D.
       ctx.resize( 1 );
+      W = ctx.canvas.width;
+      H = ctx.canvas.height;
 
       if( FPS.lastTime === 0 ) {
         FPS.lastTime = t;
@@ -490,19 +477,20 @@ function animation(){
       }
 
       try{
-        if (onSea == 0) {action(t); draw();gamePadF();}
-        else if (onSea == 1){sail(t);gamePadF();}
-        else if (onSea == 2) {drawSea();gamePadF();}
-        else if (onSea == 4) {drawInvent();gamePadF();}
-        else if (onSea == 5) {TPisland();gamePadF();}
-        else if (onSea == 6) {Help();gamePadF();}
-
+        var loops = 1;
+        while( loops --> 0 ) {
+          if (onSea == 0) {action(t); draw();gamePadF();}
+          else if (onSea == 1){sail(t);gamePadF();}
+          else if (onSea == 2) {drawSea();gamePadF();}
+          else if (onSea == 4) {drawInvent();gamePadF();}
+          else if (onSea == 5) {TPisland();gamePadF();}
+          else if (onSea == 6) {Help();gamePadF();}
+        }
       } catch(e){console.error(e);}
       if (cinematicos == 0) window.requestAnimationFrame(f);
       else {
         animation();
       }
-
       // Optimisations pour Canvas3D.
       ctx.flush();
     };
@@ -518,7 +506,7 @@ var FPS = {
 
 function draw() {
   ctx.fillStyle = colors[0];
-  ctx.fillRect(0,0,W,H);
+  ctx.clearScreen();
   backDraw();
   niveau.forEach(
     function(e,y){
