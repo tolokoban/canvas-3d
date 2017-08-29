@@ -3,7 +3,10 @@
 
 var $ = require("dom");
 var DB = require("tfw.data-binding");
+<<<<<<< HEAD
 var Modal = require("wdg.modal");
+=======
+>>>>>>> eef1bd074c4f25918e1758ec902d99e84e2235e4
 var Button = require("wdg.button");
 var Canvas3D = require("canvas-3d");
 
@@ -47,17 +50,26 @@ var Comparator = function(opts) {
     }
     if( typeof slot === "function" ) {
       loadImages( that.images ).then(function( images ) {
+<<<<<<< HEAD
         var ctx1 = Canvas3D.getContext2D( canvas1 );
         try {
           slot( ctx1, images );
           ctx1.flush();
+=======
+        var ctx1 = canvas1.getContext("2d");
+        try {
+          slot( ctx1, images );
+>>>>>>> eef1bd074c4f25918e1758ec902d99e84e2235e4
         } catch( ex ) {
           console.error( Error( ex ) );
         }
         var ctx2 = new Canvas3D( canvas2 );
         try {
           slot( ctx2, images );
+<<<<<<< HEAD
           ctx2.flush();
+=======
+>>>>>>> eef1bd074c4f25918e1758ec902d99e84e2235e4
         } catch( ex ) {
           console.error( Error( ex ) );
         }
@@ -74,6 +86,7 @@ var Comparator = function(opts) {
     }
 
     var c1 = document.createElement("canvas");
+<<<<<<< HEAD
     c1.setAttribute("class", "thm-ele8");
     c1.setAttribute("width", WIDTH);
     c1.setAttribute("height", HEIGHT);
@@ -131,11 +144,50 @@ var Comparator = function(opts) {
         btnClose.enabled = true;
       });
     }, 400);
+=======
+    c1.setAttribute("width", WIDTH);
+    c1.setAttribute("height", HEIGHT);
+    var c2 = document.createElement("canvas");
+    c2.setAttribute("width", WIDTH);
+    c2.setAttribute("height", HEIGHT);
+    var ctx1 = c1.getContext("2d");
+    var ctx2 = c2.getContext("2d");
+    var time1;
+    var time2;
+    var LOOPS = 10000;
+    var loop;
+
+    divResult.textContent = "---";
+    btnCompare.enabled = false;
+
+    loadImages( that.images ).then(function( images ) {
+      loop = LOOPS;
+      time2 = window.performance.now();
+      while( loop --> 0 ) {
+        slot( ctx2, images );
+      }
+      time2 = window.performance.now() - time2;
+
+      loop = LOOPS;
+      time1 = window.performance.now();
+      while( loop --> 0 ) {
+        slot( ctx1, images );
+      }
+      time1 = window.performance.now() - time1;
+
+      var result = Math.floor( 0.5 + 100 * (time2 / time1) );
+      divResult.textContent = result + " %";
+      btnCompare.enabled = true;
+    });
+>>>>>>> eef1bd074c4f25918e1758ec902d99e84e2235e4
   });
 
   opts = DB.extend({
     images: [],
+<<<<<<< HEAD
     loops: 10000,
+=======
+>>>>>>> eef1bd074c4f25918e1758ec902d99e84e2235e4
     slot: null
   }, opts, this);
 };
@@ -183,7 +235,10 @@ module.exports._ = _;
  * @see module:$
  * @see module:dom
  * @see module:tfw.data-binding
+<<<<<<< HEAD
  * @see module:wdg.modal
+=======
+>>>>>>> eef1bd074c4f25918e1758ec902d99e84e2235e4
  * @see module:wdg.button
  * @see module:canvas-3d
 

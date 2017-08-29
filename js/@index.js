@@ -62,6 +62,7 @@ addListener(
         APP = require('main');
 setTimeout(function (){if(typeof APP.start==='function')APP.start()});
 var W = require('x-widget');
+<<<<<<< HEAD
         W('comparator0', 'comparator', {
             slot: "drawImageBad",
             images: "sprite1, sprite2",
@@ -114,6 +115,32 @@ var W = require('x-widget');
             slot: "fill",
             images: [],
             loops: 10000})
+=======
+        W('comparator72', 'comparator', {
+            slot: "drawImage",
+            images: "sprite1, sprite2"})
+        W('comparator73', 'comparator', {
+            slot: "fillRect",
+            images: []})
+        W('comparator74', 'comparator', {
+            slot: "fillRectWithFillStyle",
+            images: []})
+        W('comparator75', 'comparator', {
+            slot: "fillRectWithFillStyleAndAlpha",
+            images: []})
+        W('comparator76', 'comparator', {
+            slot: "translate",
+            images: []})
+        W('comparator77', 'comparator', {
+            slot: "rotate",
+            images: []})
+        W('comparator78', 'comparator', {
+            slot: "rotateAndTranslate",
+            images: []})
+        W('comparator79', 'comparator', {
+            slot: "saveRestore",
+            images: []})
+>>>>>>> eef1bd074c4f25918e1758ec902d99e84e2235e4
 
     }
 );

@@ -8,6 +8,7 @@ var $ = require("dom");
 
 module.exports.fillRect = function( ctx ) {
   // #(fillRect)
+<<<<<<< HEAD
   var x, y;
   var w = ctx.canvas.width;
   var h = ctx.canvas.height;
@@ -16,6 +17,9 @@ module.exports.fillRect = function( ctx ) {
       ctx.fillRect( x, y, 20, 20 );
     }
   }
+=======
+  ctx.fillRect( 10, 10, 200, 100 );
+>>>>>>> eef1bd074c4f25918e1758ec902d99e84e2235e4
   // #(fillRect)
 };
 
@@ -91,6 +95,7 @@ module.exports.saveRestore = function( ctx ) {
   // #(saveRestore)
 };
 
+<<<<<<< HEAD
 module.exports.saveRestoreFast = function( ctx ) {
   // #(saveRestoreFast)
   var colors = [
@@ -122,6 +127,8 @@ module.exports.saveRestoreFast = function( ctx ) {
   // #(saveRestoreFast)
 };
 
+=======
+>>>>>>> eef1bd074c4f25918e1758ec902d99e84e2235e4
 module.exports.drawImage = function( ctx, images ) {
   // #(drawImage)
   var W = ctx.canvas.width;
@@ -141,6 +148,7 @@ module.exports.drawImage = function( ctx, images ) {
   // #(drawImage)
 };
 
+<<<<<<< HEAD
 module.exports.drawImageDepth = function( ctx, images ) {
   // #(drawImageDepth)
   var W = ctx.canvas.width;
@@ -202,6 +210,8 @@ module.exports.fill = function( ctx ) {
   // #(fill)
 };
 
+=======
+>>>>>>> eef1bd074c4f25918e1758ec902d99e84e2235e4
 
   
 module.exports._ = _;
