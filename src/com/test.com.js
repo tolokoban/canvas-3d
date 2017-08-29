@@ -15,6 +15,8 @@ exports.compile = function( root, libs ) {
   var att = root.attribs || {};
   var testName = root.name.substr( 5 );
   root.name = 'div';
+  var loops = parseInt( root.attribs.loops );
+  if( isNaN( loops ) ) loops = 10000;
   var children = [
     {
       type: TAG,
@@ -31,7 +33,8 @@ exports.compile = function( root, libs ) {
       attribs: {
         name: "comparator",
         $slot: testName,
-        $images: root.attribs.images || []
+        $images: root.attribs.images || [],
+        $loops: loops
       }
     }
   ];

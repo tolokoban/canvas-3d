@@ -1,19 +1,63 @@
 <x-html app="main">
     <x-md>
+You can see a real life migration of a 2D game with the Canvas3D API:
+* [Using CanvasRenderingContext2D](css/main/windwaker/index.html).
+* [Using Canvas3D](css/main/windwaker/index.html?Canvas3D).
+        
 # This page is a test case of what Canvas3D emulates
 
-The canvas on the left use __Canvas2D__ and the one on the right uses __Canvas3D__.
+In all the samples below, the canvas on the left use CanvasRenderingContext2D__ and the one on the right uses __Canvas3D__. You can perform speed tests for every example.
 
-        <test:fillRect/>        
+## drawImage()
+The performance increases when you have a lot of images to display.
+But you have to be aware of slight differences in the usage due to internal optimization.
+For instance, compare both results:        
+        <test:drawImageBad images="sprite1, sprite2"/>
+As you can see, painting order is not respected.
+This is because the optimisation consist in buffering sprites and writing them all at once at flushing time.
+And to stick with `drawImage()` usage, each image has its own sprites buffer.
+In this example, we draw 3 sprites from 2 different images.
+That's why the API creates two buffers and it flushes them one after the other.
+
+You may think that you can use depth test to prevent that to occur, but it's a bad idea with transparency.     
+        
+        <test:drawImageDepth images="sprite1, sprite2"/>
+
+The only way to be sure that the painting order is respected is to use an unique image.
+That means you have to create an atlas like this one :
+        
+        <img src="css/main/atlas.png" style="border: 1px solid #000">
+
+Not only the atlas will respect the painting order, but it boosts performances because the API have only one buffer to flush.        
+                
+        <test:drawImageFast images="atlas"/>
+
+__Warning!__ Any time you use a transformation, the API will flush all the buffers.
+So be careful, because this drops down the performance a lot.
+        
         <test:drawImage images="sprite1, sprite2"/>
 
-        <test:fill/>
+## fillRect()
+Filling rectangles is made with the buffer/flush optimization.
+That means it is very fast until you want to use transformations.
         
-        <test:saveRestore/>
-        <test:rotateAndTranslate/>
-        <test:rotate/>                
-        <test:translate/>        
-        <test:fillRectWithFillStyle/>        
+        <test:fillRect/>
+
+Using styles can slow down a little, especially if you use the `hls()`.
+The fastest syntax are `#RGB` and `#RRGGBB`.        
+        <test:fillRectWithFillStyle/>
         <test:fillRectWithFillStyleAndAlpha/>
+
+## Transformations        
+        <test:saveRestore loops="1000"/>
+As usual, transformations are slow. You can use this code to get speed.        
+        <test:saveRestoreFast loops="1000"/>
+        <test:rotateAndTranslate/>
+        <test:rotate/>
+        <test:translate/>
+
+## Path        
+        <test:fill/>
+
     </x-md>
 </x-html>

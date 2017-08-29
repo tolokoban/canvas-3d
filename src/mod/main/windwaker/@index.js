@@ -62,33 +62,58 @@ addListener(
         APP = require('main');
 setTimeout(function (){if(typeof APP.start==='function')APP.start()});
 var W = require('x-widget');
-        W('comparator36', 'comparator', {
-            slot: "fillRect",
-            images: []})
-        W('comparator37', 'comparator', {
+        W('comparator332', 'comparator', {
+            slot: "drawImageBad",
+            images: "sprite1, sprite2",
+            loops: 10000})
+        W('comparator333', 'comparator', {
+            slot: "drawImageDepth",
+            images: "sprite1, sprite2",
+            loops: 10000})
+        W('comparator334', 'comparator', {
+            slot: "drawImageFast",
+            images: "atlas",
+            loops: 10000})
+        W('comparator335', 'comparator', {
             slot: "drawImage",
-            images: "sprite1, sprite2"})
-        W('comparator38', 'comparator', {
-            slot: "fill",
-            images: []})
-        W('comparator39', 'comparator', {
-            slot: "saveRestore",
-            images: []})
-        W('comparator40', 'comparator', {
-            slot: "rotateAndTranslate",
-            images: []})
-        W('comparator41', 'comparator', {
-            slot: "rotate",
-            images: []})
-        W('comparator42', 'comparator', {
-            slot: "translate",
-            images: []})
-        W('comparator43', 'comparator', {
+            images: "sprite1, sprite2",
+            loops: 10000})
+        W('comparator336', 'comparator', {
+            slot: "fillRect",
+            images: [],
+            loops: 10000})
+        W('comparator337', 'comparator', {
             slot: "fillRectWithFillStyle",
-            images: []})
-        W('comparator44', 'comparator', {
+            images: [],
+            loops: 10000})
+        W('comparator338', 'comparator', {
             slot: "fillRectWithFillStyleAndAlpha",
-            images: []})
+            images: [],
+            loops: 10000})
+        W('comparator339', 'comparator', {
+            slot: "saveRestore",
+            images: [],
+            loops: 1000})
+        W('comparator340', 'comparator', {
+            slot: "saveRestoreFast",
+            images: [],
+            loops: 1000})
+        W('comparator341', 'comparator', {
+            slot: "rotateAndTranslate",
+            images: [],
+            loops: 10000})
+        W('comparator342', 'comparator', {
+            slot: "rotate",
+            images: [],
+            loops: 10000})
+        W('comparator343', 'comparator', {
+            slot: "translate",
+            images: [],
+            loops: 10000})
+        W('comparator344', 'comparator', {
+            slot: "fill",
+            images: [],
+            loops: 10000})
 
     }
 );

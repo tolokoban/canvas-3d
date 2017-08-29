@@ -24,7 +24,7 @@ var Canvas3D = function( canvas ) {
     alpha: false,
     depth: true,
     stencil: false,
-    antialias: false,
+    antialias: true,
     premultipliedAlpha: false,
     preserveDrawingBuffer: false,
     failIfPerformanceCaveat: false
@@ -81,7 +81,10 @@ var Canvas3D = function( canvas ) {
 
   prop( this, 'fillStyle', function() {
     return this._fillStyleName || "#000";
-  }, parseColor );
+  }, parseFillStyle );
+  prop( this, 'strokeStyle', function() {
+    return this._strokeStyleName || "#000";
+  }, parseStrokeStyle );
 
   //--------------------
   // Modules for meshes.
@@ -110,9 +113,14 @@ var Canvas3D = function( canvas ) {
 
   // Initial fillStyle is black.
   this._fillStyle = new Float32Array( [0, 0, 0] );
+  // Initial strokeStyle is black.
+  this._strokeStyle = new Float32Array( [0, 0, 0] );
+  // Line width.
+  this.lineWidth = 1;
   // Initial globalAlpha is full opacity.
   this.globalAlpha = 1;
-
+  // Depth test by default.
+  this.depthTest = true;
   // Default Z position.
   this.z = 0;
 
@@ -141,13 +149,11 @@ var Canvas3D = function( canvas ) {
     "lineCap",
     "lineDashOffset",
     "lineJoin",
-    "lineWidth",
     "miterLimit",
     "shadowBlur",
     "shadowColor",
     "shadowOffsetX",
     "shadowOffsetY",
-    "strokeStyle",
     "textAlign",
     "textBaseline"
   ].forEach(function(propName) {
@@ -232,7 +238,6 @@ module.exports = Canvas3D;
   "scrollPathIntoView",
   "setLineDash",
   "setTransform",
-  "stroke",
   "strokeRect",
   "strokeText",
   "transform"
@@ -298,6 +303,10 @@ Canvas3D.prototype.closePath = function() {
 
 Canvas3D.prototype.fill = function() {
   this._path.fill();
+};
+
+Canvas3D.prototype.stroke = function() {
+  this._path.stroke();
 };
 
 Canvas3D.prototype.scale = function( sx, sy ) {
@@ -415,15 +424,35 @@ Canvas3D.prototype.createSprite = function( img ) {
   return sprite;
 }
 
-Canvas3D.prototype.drawImage = function( img, x, y ) {
-  var w = img.width;
-  var h = img.height;
-  var z = this.z - 0.1;
+Canvas3D.prototype.drawImage = function( img, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight ) {
+  if( typeof sWidth === 'undefined' ) {
+    // drawImage(image, dx, dy)
+    sWidth = img.width;
+    sHeight = img.height;
+    dx = sx;
+    dy = sy;
+    dWidth = sWidth;
+    dHeight = sHeight;
+    sx = sy = 0;
+  }
+  else if( typeof dx === 'undefined' ) {
+    // drawImage(image, dx, dy, dWidth, dHeight)
+    sx = 0;
+    sy = 0;
+    sWidth = img.width;
+    sHeight = img.height;    
+  }
+
+  var x = dx;
+  var y = dy;
+  var w = dWidth;
+  var h = dHeight;
+  var z = this.z;
   var a = this.globalAlpha;
-  var u0 = 0;
-  var v0 = 0;
-  var u1 = 1;
-  var v1 = 1;
+  var u0 = sx / img.width;
+  var v0 = sy / img.height;
+  var u1 = (sx + sWidth) / img.width;
+  var v1 = (sy + sHeight) / img.height;
   
   var gl = this.gl;
   var prg = this._prgImage;
@@ -464,31 +493,32 @@ function readonly( object, name, value ) {
   });
 }
 
-function parseColor( style ) {
+
+function parseFillStyle( style ) {
   if( typeof style !== "string" ) return;
 
   style = style.trim().toLowerCase();
   this._fillStyleName = style;
   if( style.charAt(0) === "#" ) {
     if( style.length === 4 ) {
-      parseColorHexa3.call( this, style );
+      parseFillStyleHexa3.call( this, style );
     }
     else if( style.length === 7 ) {
-      parseColorHexa6.call( this, style );
+      parseFillStyleHexa6.call( this, style );
     }
   } else if( style.substr( 0, 3 ) === "rgb" ) {
-    parseColorRGB.call( this, style );
+    parseFillStyleRGB.call( this, style );
   } else {
     var div = document.createElement( "div" );
     div.style.color = style;
     document.body.appendChild( div );
     var result = window.getComputedStyle( div ,null).getPropertyValue('color');
-    parseColorRGB.call( this, result );
+    parseFillStyleRGB.call( this, result );
     document.body.removeChild( div );
   }
 }
 
-function parseColorRGB( style ) {
+function parseFillStyleRGB( style ) {
   var d0 = "0".charCodeAt( 0 );
   var d9 = d0 + 9;
   var i = 3;
@@ -567,7 +597,7 @@ var HEXA3 = {
   "f": 1
 };
 
-function parseColorHexa3( style ) {
+function parseFillStyleHexa3( style ) {
   this._fillStyle[0] = HEXA3[ style.charAt(1) ];
   this._fillStyle[1] = HEXA3[ style.charAt(2) ];
   this._fillStyle[2] = HEXA3[ style.charAt(3) ];
@@ -592,10 +622,107 @@ var HEXA6 = {
   "f": 15 / 255
 };
 
-function parseColorHexa6( style ) {
+function parseFillStyleHexa6( style ) {
   this._fillStyle[0] = HEXA3[ style.charAt(1) ] + HEXA6[ style.charAt(2) ];
   this._fillStyle[1] = HEXA3[ style.charAt(3) ] + HEXA6[ style.charAt(4) ];
   this._fillStyle[2] = HEXA3[ style.charAt(5) ] + HEXA6[ style.charAt(6) ];
+}
+
+
+function parseStrokeStyle( style ) {
+  if( typeof style !== "string" ) return;
+
+  style = style.trim().toLowerCase();
+  this._strokeStyleName = style;
+  if( style.charAt(0) === "#" ) {
+    if( style.length === 4 ) {
+      parseStrokeStyleHexa3.call( this, style );
+    }
+    else if( style.length === 7 ) {
+      parseStrokeStyleHexa6.call( this, style );
+    }
+  } else if( style.substr( 0, 3 ) === "rgb" ) {
+    parseStrokeStyleRGB.call( this, style );
+  } else {
+    var div = document.createElement( "div" );
+    div.style.color = style;
+    document.body.appendChild( div );
+    var result = window.getComputedStyle( div ,null).getPropertyValue('color');
+    parseStrokeStyleRGB.call( this, result );
+    document.body.removeChild( div );
+  }
+}
+
+function parseStrokeStyleRGB( style ) {
+  var d0 = "0".charCodeAt( 0 );
+  var d9 = d0 + 9;
+  var i = 3;
+  var s = style.length - 1;
+  // m == 0 :
+  var m = 0;
+  var c;
+  var R = 0, G = 0, B = 0;
+
+  // Rechercher le premier chiffre.
+  while( i < s ) {
+    c = style.charCodeAt( i );
+    if( c >= d0 && c <= d9 ) break;
+    i++;
+  }
+
+  // Lire la valeur du rouge.
+  while( i < s ) {
+    c = style.charCodeAt( i );
+    if( c < d0 || c > d9 ) break;
+    R = 10 * R + c - d0;
+    i++;
+  }
+
+  // Rechercher le prochain chiffre.
+  while( i < s ) {
+    c = style.charCodeAt( i );
+    if( c >= d0 && c <= d9 ) break;
+    i++;
+  }
+
+  // Lire la valeur du rouge.
+  while( i < s ) {
+    c = style.charCodeAt( i );
+    if( c < d0 || c > d9 ) break;
+    G = 10 * G + c - d0;
+    i++;
+  }
+
+  // Rechercher le prochain chiffre.
+  while( i < s ) {
+    c = style.charCodeAt( i );
+    if( c >= d0 && c <= d9 ) break;
+    i++;
+  }
+
+  // Lire la valeur du rouge.
+  while( i < s ) {
+    c = style.charCodeAt( i );
+    if( c < d0 || c > d9 ) break;
+    B = 10 * B + c - d0;
+    i++;
+  }
+
+  this._strokeStyle[0] = R / 255;
+  this._strokeStyle[1] = G / 255;
+  this._strokeStyle[2] = B / 255;
+}
+
+function parseStrokeStyleHexa3( style ) {
+  this._strokeStyle[0] = HEXA3[ style.charAt(1) ];
+  this._strokeStyle[1] = HEXA3[ style.charAt(2) ];
+  this._strokeStyle[2] = HEXA3[ style.charAt(3) ];
+}
+
+function parseStrokeStyleHexa6( style ) {
+  this._strokeStyle[0] = HEXA3[ style.charAt(1) ] + HEXA6[ style.charAt(2) ];
+  this._strokeStyle[1] = HEXA3[ style.charAt(3) ] + HEXA6[ style.charAt(4) ];
+  this._strokeStyle[2] = HEXA3[ style.charAt(5) ] + HEXA6[ style.charAt(6) ];
 }
 
 
@@ -626,7 +753,7 @@ Path.prototype.lineTo = function( x, y, z ) {
   var idx = this._count;
   this._count = idx + 1;
   this._points.push( x, y, z );
-  this._currentPolyline.indexes.push( idx );
+  this._currentPolyline.indexes.push( idx * 3 );
 };
 
 Path.prototype.closePath = function() {
@@ -638,10 +765,51 @@ Path.prototype.fill = function() {
     console.info("[mod/canvas-3d] this._polylines=", this._polylines);
     console.info("[mod/canvas-3d] this._points=", this._points);
   */
-
 };
 
-
+Path.prototype.stroke = function() {
+  var c3 = this._canvas3D;
+  var lw = c3.lineWidth * 0.5;
+  var pts = this._points;
+  // Switching between fill and stroke style.
+  var fillStyle = c3._fillStyle;
+  c3._fillStyle = c3._strokeStyle;
+  
+  this._polylines.forEach(function (polyline) {
+    var i, k1, k2;
+    var x1, y1, x2, y2;
+    var vx, vy;
+    var tx, ty;
+    var len;
+    k1 = polyline.indexes[0];
+    x1 = pts[k1 + 0];
+    y1 = pts[k1 + 1];
+    for( i=1 ; i<polyline.indexes.length ; i++ ) {
+      k2 = polyline.indexes[i];
+      x2 = pts[k2 + 0];
+      y2 = pts[k2 + 1];
+      vx = x2 - x1;
+      vy = y2 - y1;
+      len = vx*vx + vy*vy;
+      if( len > 0.01 ) {
+        len = Math.sqrt( len );
+        tx = vy * lw / len;
+        ty = -vx * lw / len;
+        c3.paintQuad(
+          x1 + tx, y1 + ty,
+          x1 - tx, y1 - ty,
+          x2 - tx, y2 - ty,
+          x2 + tx, y2 + ty
+        );
+      }
+      // Next point.
+      x1 = x2;
+      y1 = y2;
+    }
+  });
+  // Backup fill style.
+  c3._fillStyle = fillStyle;
+};
 
 
   

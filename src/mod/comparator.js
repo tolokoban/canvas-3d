@@ -96,7 +96,7 @@ var Comparator = function(opts) {
     var ctx2 = new Canvas3D( c2 );
     var time1;
     var time2;
-    var LOOPS = 1000;
+    var LOOPS = that.loops;
     var loop;
 
     divResult.textContent = "---";
@@ -134,6 +134,7 @@ var Comparator = function(opts) {
 
   opts = DB.extend({
     images: [],
+    loops: 10000,
     slot: null
   }, opts, this);
 };

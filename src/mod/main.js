@@ -90,6 +90,37 @@ module.exports.saveRestore = function( ctx ) {
   // #(saveRestore)
 };
 
+module.exports.saveRestoreFast = function( ctx ) {
+  // #(saveRestoreFast)
+  var colors = [
+    '#0F0', '#1F0', '#2F0', '#3F0', '#4F0', '#5F0', '#6F0', '#7F0',
+    '#8F0', '#9F0', '#AF0', '#BF0', '#CF0', '#DF0', '#EF0', '#FF0',
+    '#FE0', '#FD0', '#FC0', '#FB0', '#FA0', '#F90', '#F80', '#F70',
+    '#F60', '#F50', '#F40', '#F30', '#F20', '#F10', '#F00'
+  ];
+  var x = ctx.canvas.width / 2;
+  var y = ctx.canvas.height / 2;
+  var vx1, vy1, vx2, vy2, ang;
+  var step = Math.PI / colors.length;
+  var halfStep = step / 2;
+  var r = 100;
+  for( var a=0 ; a < colors.length ; a++ ) {
+    ctx.fillStyle = colors[a];
+    ang = a * step;
+    vx1 = r * Math.cos( ang - halfStep );
+    vy1 = r * Math.sin( ang - halfStep );
+    vx2 = r * Math.cos( ang + halfStep );
+    vy2 = r * Math.sin( ang + halfStep );
+    ctx.paintQuad(
+      x + vx1, y + vy1,
+      x + vx2, y + vy2,
+      x - vx1, y - vy1,
+      x - vx2, y - vy2
+    );
+  }
+  // #(saveRestoreFast)
+};
+
 module.exports.drawImage = function( ctx, images ) {
   // #(drawImage)
   var W = ctx.canvas.width;
@@ -107,6 +138,50 @@ module.exports.drawImage = function( ctx, images ) {
   ctx.drawImage( images.sprite1, 0, 0 );
   ctx.restore();
   // #(drawImage)
+};
+
+module.exports.drawImageDepth = function( ctx, images ) {
+  // #(drawImageDepth)
+  var W = ctx.canvas.width;
+  var H = ctx.canvas.height;
+  var sprite1 = images.sprite1;
+  var sprite2 = images.sprite2;
+
+  ctx.depthTest = true;
+  ctx.z = 0;
+  ctx.drawImage( sprite1, 0, 0 );
+  ctx.drawImage( sprite2, W - 160, 0 );
+  ctx.globalAlpha = 0.5;
+  ctx.z = -0.5;
+  ctx.drawImage( sprite1, 100, 0 );
+  // #(drawImageDepth)
+};
+
+module.exports.drawImageFast = function( ctx, images ) {
+  // #(drawImageFast)
+  var W = ctx.canvas.width;
+  var H = ctx.canvas.height;
+  var atlas = images.atlas;
+
+  ctx.drawImage( atlas, 0, 0, 200, 200, W - 200, 0, 200, 200 );
+  ctx.drawImage( atlas, 200, 0, 200, 200, 0, 0, 200, 200 );
+  ctx.globalAlpha = 0.75;
+  ctx.drawImage( atlas, 0, 0, 200, 200, 100, 25, 100, 100 );
+  // #(drawImageFast)
+};
+
+module.exports.drawImageBad = function( ctx, images ) {
+  // #(drawImageBad)
+  var W = ctx.canvas.width;
+  var H = ctx.canvas.height;
+  var sprite1 = images.sprite1;
+  var sprite2 = images.sprite2;
+
+  ctx.drawImage( sprite1, 0, 0 );
+  ctx.drawImage( sprite2, W - 160, 0 );
+  ctx.globalAlpha = 0.5;
+  ctx.drawImage( sprite1, 100, 0 );
+  // #(drawImageBad)
 };
 
 module.exports.fill = function( ctx ) {

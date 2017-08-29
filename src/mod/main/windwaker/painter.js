@@ -113,7 +113,6 @@ var Painter = function() {
           }
 
           lineVert.push( [lineA, lineB, lineC] );
-
         });
       });
 
@@ -263,13 +262,12 @@ var Painter = function() {
     },
 
     cell: function( ctx, x, y, z ,n , nivel) {
-
       //-----------------------------------------------------------------
-
       if( typeof nivel === 'undefined' ) nivel = niveau;
       if( z > -1 ) {
         var X = toX( x, y, z );
         var Y = toY( x, y, z );
+        ctx.z = 1 - Y / 1000;
         // Partie frontale (verticale)
         if  (y == nivel.length - 1 || z > nivel[y+1][x]){
           ctx.fillStyle = colors[1];
@@ -285,15 +283,6 @@ var Painter = function() {
             X + cellX + cellS, Y - cellY + (z + 1) * cellZ,
             X + cellX, Y + (z + 1) * cellZ
           );
-          /*
-            ctx.beginPath();
-            ctx.moveTo( X + cellX, Y );
-            ctx.lineTo( X + cellX + cellS, Y - cellY );
-            ctx.lineTo( X + cellX + cellS, Y - cellY + (z + 1) * cellZ);
-            ctx.lineTo( X + cellX, Y + (z + 1) * cellZ );
-            ctx.closePath();
-            ctx.fill();
-          */
         }
 
         // Partie horizontale.
