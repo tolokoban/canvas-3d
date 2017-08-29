@@ -1,6 +1,7 @@
 "use strict";
 
 var Mesh = require("canvas-3d.mesh");
+var Sprite = require("canvas-3d.sprite");
 var Program = require("canvas-3d.program");
 
 var EMPTY = function() {};
@@ -14,17 +15,30 @@ var NOT_IMPLEMENTED = {};
 var Canvas3D = function( canvas ) {
   var that = this;
 
-  var gl = canvas.getContext("webgl", {
+  console.info( "Creation of context for WebGL 2.0" );
+  var gl = canvas.getContext("webgl2", {
     alpha: false,
     depth: true,
     stencil: false,
     antialias: false,
     premultipliedAlpha: false,
-    preserveDrawingBuffer: true,
+    preserveDrawingBuffer: false,
     failIfPerformanceCaveat: false
   });
+  if( !gl ) {
+    console.warn( "Fallback to WebGL 1.0" );
+    gl = canvas.getContext("webgl", {
+      alpha: false,
+      depth: true,
+      stencil: false,
+      antialias: false,
+      premultipliedAlpha: false,
+      preserveDrawingBuffer: false,
+      failIfPerformanceCaveat: false
+    });
+  }
   this._gl = gl;
-  
+
   gl.clearColor(1.0, 1.0, 1.0, 1.0);
   gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
 
@@ -69,6 +83,11 @@ var Canvas3D = function( canvas ) {
   // Modules for meshes.
   this._mesh = new Mesh( this );
 
+  //----------------------
+  // Modules for sprites.
+  // Each new image create a new sprite module.
+  this._sprites = [];
+  
   //--------------------
   // Program for images.
   this._prgImage = new Program( gl, {
@@ -172,7 +191,7 @@ Canvas3D.getContext2D = function( canvas ) {
     ctx.lineTo( x4, y4 );
     ctx.fill();
   };
-  
+
   return ctx;
 };
 
@@ -223,6 +242,9 @@ module.exports = Canvas3D;
 
 Canvas3D.prototype.flush = function() {
   this._mesh.flush();
+  this._sprites.forEach(function (sprite) {
+    sprite.flush();
+  });
 };
 
 /**
@@ -314,7 +336,7 @@ Canvas3D.prototype.translate = function( tx, ty ) {
 
 Canvas3D.prototype.rotate = function( a ) {
   this.flush();
-  
+
   var t = this._transform;
   var m11 = t[0];
   var m21 = t[1];
@@ -348,7 +370,7 @@ Canvas3D.prototype.save = function() {
 Canvas3D.prototype.restore = function() {
   if( this._contextStack.length === 0 ) return;
   this.flush();
-  
+
   var context = this._contextStack.pop();
 
   this.globalAlpha = context.globalAlpha;
@@ -373,31 +395,6 @@ Canvas3D.prototype.paintQuad = function( x1, y1, x2, y2, x3, y3, x4, y4 ) {
     c[0], c[1], c[2]  );
 };
 
-Canvas3D.prototype.createTexture = function( img ) {
-  if( !img.$texture ) {
-    var gl = this.gl;
-    var texture = gl.createTexture();
-
-    // Définir les paramètres de répétition.
-    gl.bindTexture( gl.TEXTURE_2D, texture );
-    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE );
-    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE );
-    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR );
-    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
-
-    // Charger les données de l'image dans la carte graphique.
-    gl.activeTexture( gl.TEXTURE0 );
-    gl.bindTexture( gl.TEXTURE_2D, texture );
-    gl.texImage2D(
-      gl.TEXTURE_2D, 0, gl.RGBA,
-      gl.RGBA, gl.UNSIGNED_BYTE,
-      img );
-
-    img.$texture = texture;
-  }
-  return img.$texture;
-};
-
 Canvas3D.prototype.deleteTexture = function( img ) {
   if( img.$texture ) {
     this.gl.deleteTexture( img.$texture );
@@ -405,45 +402,37 @@ Canvas3D.prototype.deleteTexture = function( img ) {
   }
 };
 
+Canvas3D.prototype.createSprite = function( img ) {
+  var sprite = img.$sprite;
+  if( !sprite ) {
+    sprite = new Sprite( this, img );
+    this._sprites.push( sprite );
+  }
+  return sprite;
+}
+
 Canvas3D.prototype.drawImage = function( img, x, y ) {
   var w = img.width;
   var h = img.height;
   var z = this.z - 0.1;
-
+  var a = this.globalAlpha;
+  var u0 = 0;
+  var v0 = 0;
+  var u1 = 1;
+  var v1 = 1;
+  
   var gl = this.gl;
   var prg = this._prgImage;
   var vert = this._vertImage;
   var buff = this._buffImage;
 
-  vert[0] = x;
-  vert[1] = y;
-  vert[2] = z;
-  vert[5] = x + w;
-  vert[6] = y;
-  vert[7] = z;
-  vert[10] = x + w;
-  vert[11] = y + h;
-  vert[12] = z;
-  vert[15] = x;
-  vert[16] = y + h;
-  vert[17] = z;
-
-  prg.use();
-  prg.$uniWidth = gl.canvas.width;
-  prg.$uniHeight = gl.canvas.height;
-  prg.$uniGlobalAlpha = this.globalAlpha;
-  prg.$uniTransform = this._transform;
-
-  // Textures.
-  gl.activeTexture( gl.TEXTURE0 );
-  gl.bindTexture( gl.TEXTURE_2D, this.createTexture( img ) );
-  prg.$tex = 0;
-
-  prg.bindAttribs( buff, "attPosition", "attUV" );
-  gl.bindBuffer( gl.ARRAY_BUFFER, buff );
-  gl.bufferData( gl.ARRAY_BUFFER, vert, gl.STATIC_DRAW );
-
-  gl.drawArrays( gl.TRIANGLE_FAN, 0, 4 );
+  var sprite = this.createSprite( img );
+  sprite.paint(
+    x, y, z, u0, v0, a,
+    x + w, y, z, u1, v0, a,
+    x + w, y + h, z, u1, v1, a,
+    x, y + h, z, u0, v1, a    
+  );
 };
 
 Canvas3D.prototype.clear = function() {
@@ -647,4 +636,5 @@ Path.prototype.fill = function() {
   */
 
 };
+
 

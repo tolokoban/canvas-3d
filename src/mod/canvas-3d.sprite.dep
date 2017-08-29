@@ -1,0 +1,6 @@
+{
+  "var": {
+    "vert": "canvas-3d.sprite.vert",
+    "frag": "canvas-3d.sprite.frag"
+  }
+}
